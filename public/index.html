@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <head>
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -16,7 +17,9 @@
 			<form class="form-inline">
 				<div class="form-group">
 					<input id="new-argument" placeholder="What needs to be done?" class="form-control">
-					<input type="button" class="btn btn-primary" id="add-new-argument" value="Start a social movement!">
+					<button class="btn btn-primary" id="add-new-argument" >
+						Start a social movement!
+					</button>
 				</div>
 			</form>
 		</header>
@@ -28,7 +31,12 @@
 	
 	<script type="text/template" id="argument-template">
 		<div class="view">
-			<span>conf.: <%- confidence %></span>
+			<button class="btn btn-success btn-sm add-confidence">
+				<%- confidence %>
+			</button>
+			<button class="btn btn-danger btn-sm destroy">
+				<span class="glyphicon glyphicon-remove destroy"></span>
+			</button>
 			<label><%- title %></label>
 		</div>
 	</script>
@@ -50,10 +58,26 @@
 		
 		app.ArgumentView = Backbone.View.extend({
 			tagName: 'li',
+			className: 'list-unstyled',
 			template: _.template($('#argument-template').html()),
 			render: function(){
 				this.$el.html(this.template(this.model.toJSON()));
 				return this;
+			},
+			initialize: function(){
+				this.model.on('change', this.render, this);
+				this.model.on('destroy', this.remove, this);
+			},
+			events: {
+				'click .destroy': 'destroy',
+				'click .add-confidence': 'addConfidence',
+			},
+			destroy: function(){
+				this.model.destroy();
+			},
+			addConfidence: function() {
+				var new_confidence = 1 + this.model.get('confidence');
+				this.model.save({confidence: new_confidence});
 			}
 		});
 		
@@ -69,6 +93,7 @@
 				'click #add-new-argument': 'createArgumentOnBtnClick'
 			},
 			createArgumentOnBtnClick: function(event) {
+				event.preventDefault();
 				if (!this.input.val().trim()) {
 					return false;
 				}
