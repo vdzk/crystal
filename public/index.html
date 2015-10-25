@@ -24,7 +24,11 @@
 			</form>
 		</header>
 		<section id="main">
-			<div>None so far. Be the first one!</div>
+			<div class="btn-group" role="group" aria-label="argument-selections">
+				<a class="btn btn-default" href="/#/" role="button">all</a>
+				<a class="btn btn-default" href="/#/new" role="button">new</a>
+				<a class="btn btn-default" href="/#/top" role="button">top</a>
+			</div>
 			<ul id="argument-list"></ul>
 		</section>
 	</div>
@@ -52,7 +56,15 @@
 		
 		app.ArgumentList = Backbone.Collection.extend({
 			model: app.Argument,
-			localStorage: new Store("argument-list")
+			localStorage: new Store("argument-list"),
+			top: function() {
+				return this.sortBy('confidence').slice(-3).reverse();
+			},
+			zero_confidence: function() {
+				return this.filter(function(argument) {
+					return argument.get('confidence') == 0;
+				});
+			},
 		});
 		app.argumentList = new app.ArgumentList();
 		
@@ -106,7 +118,17 @@
 			},
 			addAll: function(){
 				this.$('#argument-list').html('');
-				app.argumentList.each(this.addOne, this);
+				switch(window.filter){
+					case 'top':
+						_.each(app.argumentList.top(), this.addOne);
+						break;
+					case 'new':
+						_.each(app.argumentList.zero_confidence(), this.addOne);
+						break;
+					default:
+						app.argumentList.each(this.addOne, this);
+						break;
+				}
 			},
 			newAttributes: function(){
 				return {
@@ -115,6 +137,19 @@
 				}
 			}
 		});
+		
+		app.Router = Backbone.Router.extend({
+			routes: {
+				'*filter' : 'setFilter'
+			},
+			setFilter: function(params) {
+				window.filter = (params && params.trim) ? params.trim() : '';
+				app.argumentList.trigger('reset');
+			}
+		});
+		
+		app.router = new app.Router();
+		Backbone.history.start()
 		app.appView = new app.AppView();
 	</script>
 </body>
