@@ -34,10 +34,10 @@ require([
 	'backbone',
 	'views/app',
 	'routers/router'
-], function (Backbone, AppView, Workspace) {
+], function (Backbone, AppView, ArgumentRouter) {
 	/*jshint nonew:false*/
 	// Initialize routing and start Backbone.history()
-	new Workspace();
+	new ArgumentRouter();
 	Backbone.history.start();
 
 	// Initialize the application view

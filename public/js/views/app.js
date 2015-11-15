@@ -27,7 +27,7 @@ define([
 			this.input.val('');
 		},
 		addOne: function(argument){
-			var view = new app.ArgumentView({model: argument});
+			var view = new ArgumentView({model: argument});
 			$('#argument-list').append(view.render().el);
 		},
 		addAll: function(){

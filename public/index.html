@@ -4,13 +4,9 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 	<title>Crystal</title>
 	<link rel="stylesheet" href="/css/bootstrap.css">
+	<link rel="stylesheet" href="/css/arguments.css">
 	<link rel="stylesheet" href="/css/global.css">
 	<script data-main="js/main" src="/js/libs/require.js"></script>
-	<script src="/js/libs/jquery.js"></script>
-	<script src="/js/libs/bootstrap.js"></script>
-	<script src="/js/libs/underscore.js"></script>
-	<script src="/js/libs/backbone.js"></script>
-	<script src="/js/libs/backbone.localStorage.js"></script>
 </head>
 <body>
 	<div class="container" id="social-movements">
@@ -34,123 +30,4 @@
 			<ul id="argument-list" class="list-unstyled"></ul>
 		</section>
 	</div>
-	
-	<script type="text/template" id="argument-template">
-		<div class="view">
-			<button class="btn btn-success btn-sm add-confidence">
-				<%- confidence %>
-			</button>
-			<button class="btn btn-danger btn-sm destroy">
-				<span class="glyphicon glyphicon-remove destroy"></span>
-			</button>
-			<label><%- title %></label>
-		</div>
-	</script>
-
-	<script type="text/javascript">
-		var app = {};
-		app.Argument = Backbone.Model.extend({
-			defaults: {
-				title: '',
-				confidence: 0
-			}
-		});
-		
-		app.ArgumentList = Backbone.Collection.extend({
-			model: app.Argument,
-			localStorage: new Store("argument-list"),
-			top: function() {
-				return this.sortBy('confidence').slice(-3).reverse();
-			},
-			zero_confidence: function() {
-				return this.filter(function(argument) {
-					return argument.get('confidence') == 0;
-				});
-			},
-		});
-		app.arguments = new app.Arguments();
-		
-		app.ArgumentView = Backbone.View.extend({
-			tagName: 'li',
-			template: _.template($('#argument-template').html()),
-			render: function(){
-				this.$el.html(this.template(this.model.toJSON()));
-				return this;
-			},
-			initialize: function(){
-				this.model.on('change', this.render, this);
-				this.model.on('destroy', this.remove, this);
-			},
-			events: {
-				'click .destroy': 'destroy',
-				'click .add-confidence': 'addConfidence',
-			},
-			destroy: function(){
-				this.model.destroy();
-			},
-			addConfidence: function() {
-				var new_confidence = 1 + this.model.get('confidence');
-				this.model.save({confidence: new_confidence});
-			}
-		});
-		
-		app.AppView = Backbone.View.extend({
-			el: '#social-movements',
-			initialize: function () {
-				this.input = this.$('#new-argument');
-				app.arguments.on('add', this.addOne, this);
-				app.arguments.on('reset', this.addAll, this);
-				app.arguments.fetch();
-			},
-			events: {
-				'click #add-new-argument': 'createArgumentOnBtnClick'
-			},
-			createArgumentOnBtnClick: function(event) {
-				event.preventDefault();
-				if (!this.input.val().trim()) {
-					return false;
-				}
-				app.arguments.create(this.newAttributes());
-				this.input.val('');
-			},
-			addOne: function(argument){
-				var view = new app.ArgumentView({model: argument});
-				$('#argument-list').append(view.render().el);
-			},
-			addAll: function(){
-				this.$('#argument-list').html('');
-				switch(window.filter){
-					case 'top':
-						_.each(app.arguments.top(), this.addOne);
-						break;
-					case 'new':
-						_.each(app.arguments.zero_confidence(), this.addOne);
-						break;
-					default:
-						app.arguments.each(this.addOne, this);
-						break;
-				}
-			},
-			newAttributes: function(){
-				return {
-					title: this.input.val().trim(),
-					confidence: 0
-				}
-			}
-		});
-		
-		app.Router = Backbone.Router.extend({
-			routes: {
-				'*filter' : 'setFilter'
-			},
-			setFilter: function(params) {
-				window.filter = (params && params.trim) ? params.trim() : '';
-				app.arguments.trigger('reset');
-			}
-		});
-		
-		app.router = new app.Router();
-		Backbone.history.start()
-		app.appView = new app.AppView();
-	</script>
 </body>
