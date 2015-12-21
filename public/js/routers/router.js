@@ -8,7 +8,13 @@ define([
 			'*filter' : 'setFilter'
 		},
 		setFilter: function(params) {
-			window.filter = (params && params.trim) ? params.trim() : '';
+			filter = (params && params.trim) ? params.trim() : '';
+			var filterMethods = {
+				'top': 'top',
+				'new': 'zero_confidence'
+			};
+			var filterMethod = filterMethods[filter] || '';
+			Arguments.setFilter(filterMethod);
 			Arguments.trigger('reset');
 		}
 	});

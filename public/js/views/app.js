@@ -32,17 +32,7 @@ define([
 		},
 		addAll: function(){
 			this.$('#argument-list').html('');
-			switch(window.filter){
-				case 'top':
-					_.each(Arguments.top(), this.addOne);
-					break;
-				case 'new':
-					_.each(Arguments.zero_confidence(), this.addOne);
-					break;
-				default:
-					Arguments.each(this.addOne, this);
-					break;
-			}
+			_.each(Arguments.filtered(), this.addOne);
 		},
 		newAttributes: function(){
 			return {
