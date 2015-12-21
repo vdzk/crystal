@@ -1,8 +1,9 @@
 {"apps":[{
-	"name"				: "crystal",
-	"script"			: "server.js",
-	"watch"				: true,
-	"log_date_format"	: "YYYY-MM-DD HH:mm Z",
+	"name": "crystal",
+	"script": "server.js",
+	"watch": true,
+	"out_file": "out.log",
+	"log_date_format": "YYYY-MM-DD HH:mm Z",
 	"watch_options": {
 		"followSymlinks": false,
 		"usePolling": true,
