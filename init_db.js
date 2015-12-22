@@ -15,8 +15,8 @@ db.createDatabase('crystal').then(
 	() => {
 		db.useDatabase('crystal');
 		console.log('Switched to crystal database.');
-		argumnets = db.collection('argumnets');
-		return argumnets.create();
+		arguments = db.collection('arguments');
+		return arguments.create();
 	}
 ).then(
 	() => console.log('Collection created'),

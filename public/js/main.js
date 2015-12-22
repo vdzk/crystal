@@ -15,17 +15,12 @@ require.config({
 				'jquery'
 			],
 			exports: 'Backbone'
-		},
-		backboneLocalstorage: {
-			deps: ['backbone'],
-			exports: 'Store'
 		}
 	},
 	paths: {
 		jquery: '/js/libs/jquery',
 		underscore: '/js/libs/underscore',
 		backbone: '/js/libs/backbone',
-		backboneLocalstorage: '/js/libs/backbone.localStorage',
 		text: '/js/libs/text'
 	}
 });

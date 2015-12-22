@@ -1,17 +1,23 @@
 define([
 	'underscore',
 	'backbone',
-	'backboneLocalstorage',
 	'models/argument'
-], function (_, Backbone, Store, Argument) {
-	var Arguments = Backbone.Collection.extend({
+], function (_, Backbone, Argument) {
+	Arguments = Backbone.Collection.extend({
 		initialize: function() {
 			for (filterMethod in this.filters) {
 				this.filters[filterMethod] = this.filters[filterMethod].bind(this);
 			}
 		},
 		model: Argument,
-		localStorage: new Store("argument-list"),
+		url: '/arguments',
+		parse: function(data) {
+			//Populate the Backbone id property with the ArangoDB _key property.
+			data.forEach(function(argument) {
+				argument.id = argument._key
+			});
+			return data;
+		},
 		curFilter: '',
 		setFilter: function(filterMethod) {
 			this.curFilter = filterMethod;
