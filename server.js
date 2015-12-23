@@ -5,7 +5,14 @@ var bodyParser = require('body-parser');
 app.use(bodyParser.json());
 var path = require('path');
 var favicon = require('serve-favicon');
-var db = require('arangojs')();
+var arangojs = require('arangojs');
+var aqlQuery = arangojs.aqlQuery;
+var db = arangojs();
+
+//Log errors inside promises
+process.on('unhandledRejection', function(reason) {
+    console.error(reason.stack);
+});
 
 //Set up the database and a collection
 db.useDatabase('crystal');
@@ -13,8 +20,13 @@ db.useDatabase('crystal');
 //Object which manages access to argument data
 var Arguments = {
 	collection: db.collection('arguments'),
-	getAll: function() {
-		return Arguments.collection.all().then(function(cursor) {
+	relations: db.edgeCollection('relations'),
+	getAllActions: function() {
+		return db.query(aqlQuery`
+			FOR node IN arguments
+			  FILTER node.type == 'action'
+			  RETURN node
+		`).then(function(cursor) {
 			return cursor.map(function(argument) {
 				return argument;
 			})
@@ -24,7 +36,26 @@ var Arguments = {
 		return Arguments.collection.document(key);
 	},
 	add: function(argument) {
-		return Arguments.collection.save(argument);
+		argument.type = 'action';
+		var save_promise = Arguments.collection.save(argument);
+		//also create a utility node for the action node of the argument
+		var utility_node = {
+			type: 'utility',
+			utility_table: [[0,0],[1,1]],	//utility ranges from 0 to 1 depending on the values of its parents
+			group: 'someone'
+		};
+		var action_meta = {};
+		var utility_meta = {};
+		var save_chain_promise = save_promise.then(function(meta) {
+			action_meta = meta;
+			return Arguments.collection.save(utility_node);
+		}).then(function(meta) {
+			utility_meta = meta;
+			return Arguments.relations.save({}, action_meta._id, utility_meta._id);
+		}).then(function(meta) {
+			return Promise.resolve(action_meta);
+		});
+		return save_chain_promise;
 	},
 	update: function(key, argument) {
 		return Arguments.collection.update(key, argument);
@@ -36,7 +67,7 @@ var Arguments = {
 
 //Set express REST routes
 app.get('/arguments', function(req, res) {
-	Arguments.getAll().then(function(arguments) {
+	Arguments.getAllActions().then(function(arguments) {
 		res.send(arguments);
 	});
 });

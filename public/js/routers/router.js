@@ -5,7 +5,11 @@ define([
 ], function ($, Backbone, Arguments) {
 	ArgumentRouter = Backbone.Router.extend({
 		routes: {
-			'*filter' : 'setFilter'
+			'argument/:id': 'showArgument',
+			'*filter': 'setFilter'
+		},
+		showArgument: function(id) {
+			console.log('going to argument with id', id);
 		},
 		setFilter: function(params) {
 			filter = (params && params.trim) ? params.trim() : '';

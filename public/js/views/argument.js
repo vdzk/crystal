@@ -8,7 +8,9 @@ define([
 		tagName: 'li',
 		template: _.template(argumentItemTemplate),
 		render: function(){
-			this.$el.html(this.template(this.model.toJSON()));
+			var item_data = this.model.toJSON();
+			item_data.url = '/#/argument/' + item_data.id;
+			this.$el.html(this.template(item_data));
 			return this;
 		},
 		initialize: function(){
